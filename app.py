@@ -1,19 +1,19 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
-from deepface import DeepFace
 
-# Flask setup
+# IMPORTANT: if you use DeepFace, import inside the request handler to avoid build-time import errors
+# from deepface import DeepFace  
+
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "static/uploads"
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Allowed file types
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Emoji mapping for moods
 EMOJI_MAP = {
     "happy": "😊",
     "sad": "😢",
@@ -32,9 +32,8 @@ def index():
     if request.method == "POST":
         if "file" not in request.files:
             return redirect(request.url)
-        
-        file = request.files["file"]
 
+        file = request.files["file"]
         if file.filename == "":
             return redirect(request.url)
 
@@ -44,16 +43,18 @@ def index():
             file.save(file_path)
 
             try:
-                # Analyze mood using DeepFace
+                # import DeepFace here (deferred import helps with some deployment issues)
+                from deepface import DeepFace
                 result = DeepFace.analyze(img_path=file_path, actions=["emotion"], enforce_detection=False)
-                mood = result[0]["dominant_emotion"].capitalize()
-                emoji = EMOJI_MAP.get(mood.lower(), "")
-                mood = f"{emoji} {mood}"
+                mood_raw = result[0]["dominant_emotion"].lower()
+                emoji = EMOJI_MAP.get(mood_raw, "")
+                mood = f"{emoji} {mood_raw.capitalize()}"
             except Exception as e:
                 mood = f"Error: {str(e)}"
 
     return render_template("index.html", mood=mood, filename=filename)
 
 if __name__ == "__main__":
-    os.makedirs("static/uploads", exist_ok=True)
-    app.run(debug=True)
+    # When running locally with python app.py we allow specifying $PORT (Render provides $PORT in production)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
