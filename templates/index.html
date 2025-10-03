@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mood Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>😊 AI Mood Detector</h1>
+        <p>Upload an image to detect the mood using AI</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label for="file" class="upload-label">Choose Image</label>
+            <input type="file" name="file" id="file" accept="image/*" required onchange="previewImage(event)">
+            <br>
+            <button type="submit">Detect Mood</button>
+        </form>
+
+        <!-- Single Preview -->
+        <div class="preview">
+            <img id="preview-img" 
+                 src="{{ url_for('static', filename='uploads/' + filename) if filename else '#' }}" 
+                 alt="Preview" 
+                 style="{% if filename %}display:block;{% else %}display:none;{% endif %}">
+        </div>
+        
+        
+
+        {% if mood %}
+        <div id="result">
+            Mood: {{ mood }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- JS for live preview -->
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
