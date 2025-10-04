@@ -44,7 +44,7 @@ def index():
 
             try:
                 from deepface import DeepFace
-                result = DeepFace.analyze(img_path=file_path, actions=["emotion"], enforce_detection=False,model_name="SFace")
+                result = DeepFace.analyze(img_path=file_path, actions=["emotion"],enforce_detection=False,detector_backend="opencv")
                 mood_raw = result[0]["dominant_emotion"].lower()
                 emoji = EMOJI_MAP.get(mood_raw, "")
                 mood = f"{emoji} {mood_raw.capitalize()}"
