@@ -2,8 +2,8 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-# IMPORTANT: if you use DeepFace, import inside the request handler to avoid build-time import errors
-# from deepface import DeepFace  
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "static/uploads"
@@ -43,9 +43,8 @@ def index():
             file.save(file_path)
 
             try:
-                # import DeepFace here (deferred import helps with some deployment issues)
                 from deepface import DeepFace
-                result = DeepFace.analyze(img_path=file_path, actions=["emotion"], enforce_detection=False)
+                result = DeepFace.analyze(img_path=file_path, actions=["emotion"], enforce_detection=False,model_name="SFace")
                 mood_raw = result[0]["dominant_emotion"].lower()
                 emoji = EMOJI_MAP.get(mood_raw, "")
                 mood = f"{emoji} {mood_raw.capitalize()}"
