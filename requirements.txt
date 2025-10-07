@@ -1,7 +1,0 @@
-flask
-gunicorn
-opencv-python-headless
-fer
-torch
-torchvision
-moviepy
